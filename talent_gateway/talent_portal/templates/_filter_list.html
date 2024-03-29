@@ -1,0 +1,35 @@
+{% load custom_template_filters %}
+<div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Filters ({{ count }})</h3>
+                            </div>
+                            {% if count == 0 %}
+
+                                <div class="panel-body">
+                                    <p>No saved filters found!</p>
+                                </div>
+
+                            {% else %}
+
+                                <ul class="list-group">
+                                    {% for global_filter in global_filters %}
+                                        <li class="list-group-item filter_a">
+                                            <a href="#"
+                                               data-filter="{{ global_filter.data|jsonify }}">
+                                                {{ global_filter.name }}</a>
+                                        </li>
+                                    {% endfor %}
+                                    {% for local_filter in local_filters %}
+                                        <li class="list-group-item filter_a">
+                                            <a href="#"
+                                               data-filter="{{ local_filter.data|jsonify }}">
+                                                {{ local_filter.name }}</a>
+                                        </li>
+                                    {% endfor %}
+                                    </li>
+                                </ul>
+
+                            {% endif %}
+
+
+                        </div>

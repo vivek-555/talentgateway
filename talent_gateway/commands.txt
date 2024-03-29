@@ -1,0 +1,16 @@
+
+// Postrgresql commands to create user and assign permissions to user
+CREATE USER inception WITH PASSWORD 'veY5oL453NbYPbjK';
+GRANT ALL PRIVILEGES ON DATABASE "inception" to inception;
+
+// Commands to update database
+ALTER ROLE inception SET client_encoding TO 'utf8';
+ALTER ROLE inception SET default_transaction_isolation TO 'read committed';
+ALTER ROLE inception SET timezone TO 'UTC';
+
+// commands to create superuser
+python manage.py createsuperuser 
+admin
+654321
+admin@abc.com
+

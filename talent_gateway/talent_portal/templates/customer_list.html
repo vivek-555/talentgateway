@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% load custom_template_filters %}
+
+{% load staticfiles %}
+
+{% block extra_head %}
+
+    <script type="text/javascript" src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/buttons/1.2.4/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.bootstrap.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/colreorder/1.3.2/js/dataTables.colReorder.min.js"></script>
+
+    <script type="text/javascript"
+            src="https://cdn.datatables.net/buttons/1.2.4/js/buttons.html5.min.js"></script>
+
+    <link type="text/css" href="{% static 'css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link type="text/css"
+          href="https://cdn.datatables.net/buttons/1.2.4/css/buttons.bootstrap.min.css"
+          rel="stylesheet">
+
+    <script type="text/javascript" src="{% static 'js/tag-it.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap-tagsinput.js' %}"></script>
+    <link type="text/css" href="{% static 'css/bootstrap-tagsinput.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'css/tagit.ui-zendesk.css' %}" rel="stylesheet">
+    <link type="text/css" href="{% static 'css/jquery.tagit.css' %}" rel="stylesheet">
+
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+
+
+        <div class="row">
+            <div class="col-lg-2">
+
+                <br/>
+                <br/>
+                <br/>
+
+                <div class="row">
+                    <div class="col-md-12 filter_list_container">
+                        {% include '_filter_list.html' %}
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="col-lg-10">
+                <h1>Customer List</h1>
+                <div class="form-group">
+
+                    <div class="">
+                        <select multiple id="degree_select" data-placeholder="Any degree"
+                                class="filter">
+                            {% for degree in degrees %}
+                                <option value="{{ degree.name }}">{{ degree.name }}
+                                    {% if degree.alias %}
+                                        ({{ degree.alias }})
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <select multiple id="skill_select" data-placeholder="Any skill"
+                                class="filter">
+                            {% for skill in skills %}
+                                <option value="{{ skill.name }}">{{ skill.name }}
+                                    {% if skill.alias %}
+                                        ({{ skill.alias }})
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn btn-default" id="exp_container">
+                            Experience
+                        </button>
+                        <select multiple id="location_select" data-placeholder="Any Location"
+                                class="filter">
+                            {% for loc in location %}
+                                <option value="{{ loc.0 }}">{{ loc.0 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" placeholder="contains" id="search_text"
+                               class="" data-role="tagsinput">
+                        <select id="batch_id_select" data-placeholder="Any Batch"
+                                class="filter">
+                            <option value=""></option>
+                            {% for batch_id in batch_ids %}
+
+                                {% if request.GET.batch %}
+
+                                    <option {% if request.GET.batch == batch_id %}selected{% endif %}
+                                            value="{{ batch_id }}">{{ batch_id }}
+                                    </option>
+
+                                {% else %}
+                                    <option value="{{ batch_id }}">{{ batch_id }}
+                                    </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <button id="filter_apply" class="btn btn-default">Apply</button>
+                        <button id="filter_save" class="btn btn-default"
+                                data-toggle="modal" data-target="#saveFilter">Save
+                        </button>
+                    </div>
+
+                </div>
+
+                <table id="user_list_table" class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <!-- visible fields -->
+                        <th>Id</th>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>Skills</th>
+                        <th>Company</th>
+                        <th>Designation</th>
+                        <th>Current Location</th>
+                        <th>Preferred Location</th>
+                        <th>Degree</th>
+                        <!-- hidden fields -->
+                        <th>Experience</th>
+                        <th>Gender</th>
+                        <th>Industry</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <!-- Save filter Modal -->
+    <div class="modal fade" id="saveFilter" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Save New Filter</h4>
+                </div>
+                <form id="saveFilterForm" method="post" action="{% url 'saveFilter' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p class="save_filter_error" style="color:red"></p>
+
+                        <div class="form-group">
+                            <label for="usr">Name:</label>
+                            <input name="filter_name" type="text" id="filter_name"
+                                   class="form-control">
+                            <input name="filter_data" type="hidden" id="filter_data"
+                                   class="form-control">
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close
+                        </button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exp popover -->
+    <div class="exp-content hide">
+        <div class="form-group">
+            <label>Experience Range</label>
+            <input type="text" id="filter_exp" readonly
+                   style="border:0; color:#f6931f; font-weight:bold;">
+            <div id="slider-range"></div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var current_applied_filter = null;
+        var current_exp_range = {
+            max: 0,
+            min: 0
+        };
+
+        var dt_language = {
+            "emptyTable": "No data available in table",
+            "info": "Showing _START_ to _END_ of _TOTAL_ customers",
+            "infoEmpty": "Showing 0 to 0 of 0 customers",
+            "infoFiltered": "(filtered from _MAX_ total customers)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Show _MENU_ customers",
+            "loadingRecords": "Loading...",
+            "processing": "Processing...",
+            "search": "Search:",
+            "zeroRecords": "No matching records found",
+            "paginate": {
+                "first": "First",
+                "last": "Last",
+                "next": "Next",
+                "previous": "Previous"
+            },
+            "aria": {
+                "sortAscending": ": activate to sort column ascending",
+                "sortDescending": ": activate to sort column descending"
+            }
+        };
+
+        $(document).ready(function () {
+
+            $("#degree_select").chosen({search_contains: true});
+            $("#skill_select").chosen({search_contains: true});
+            $("#location_select").chosen({search_contains: true});
+            $("#batch_id_select").chosen();
+
+            $("#search_text")
+
+            $('.chosen-container').css({"width": "100px"});
+            $('.chosen-drop').css({"width": "300px"});
+
+            var exp_popover_html = $('.exp-content').html();
+            $('.exp-content').remove();
+
+
+            $("#exp_container").popover({
+                html: true,
+                title: '',
+                trigger: 'click',
+                placement: 'bottom',
+                content: exp_popover_html
+            });
+
+            $('#exp_container').on('inserted.bs.popover', function () {
+                $("#slider-range").slider({
+                    range: true,
+                    min: 0,
+                    max: 30,
+                    values: [current_exp_range.min, current_exp_range.max],
+                    slide: function (event, ui) {
+                        current_exp_range.min = ui.values[0];
+                        current_exp_range.max = ui.values[1];
+                        $("#filter_exp").val(current_exp_range.min + " yrs - " + current_exp_range.max + " yrs");
+                    }
+                });
+
+                $("#filter_exp").val(current_exp_range.min +
+                    " yrs - " + current_exp_range.max + " yrs");
+            });
+
+
+            var oTable = $('#user_list_table').DataTable({
+                initComplete: function () {
+                    var api = this.api();
+                    $('#user_list_table_filter input')
+                        .off('.DT')
+                        .on('keyup.DT', function (e) {
+                            if (e.keyCode == 13) {
+                                api.search(this.value).draw();
+                            }
+                        });
+                },
+                dom: 'Blrtip',
+                buttons: [
+                    {
+                        text: 'columns',
+                        extend: 'colvis'
+                    },
+                    {
+                        extend: 'collection',
+                        text: 'export',
+                        buttons: [
+                            {
+                                text: 'csv export (all columns)',
+                                extend: 'csvHtml5',
+                                filename: 'filter_data',
+                                extension: '.csv'
+                            },
+                            {
+                                text: 'csv export visible',
+                                extend: 'csvHtml5',
+                                filename: 'filter_data',
+                                extension: '.csv',
+                                exportOptions: {
+                                    columns: ':visible',
+                                    pages: 'all'
+                                }
+                            }
+                        ]
+                    },
+
+
+                ],
+                colReorder: true,
+                language: dt_language,  // global variable defined in html
+                order: [[0, "asc"]],
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                columns: [{
+                    "data": function (row) {
+                        var id = row[0];
+                        var url = "/user/edit/u-" + id;
+                        return "<a id='test' href='" + url + "'>u-" + id + "</a>"
+                    }
+                }, null, null, {"orderable": false}, null, {"orderable": false}, {"orderable": false}, {"orderable": false}, {"orderable": false}, {"visible": false},
+                    {"visible": false, "orderable": false}, {
+                        "visible": false,
+                        "orderable": false
+                    }],
+                columnDefs: [
+                    {
+                        orderable: true,
+                        searchable: true,
+                        className: "center",
+                        targets: [1, 2]
+                    },
+                    {
+                        className: "tags", "targets": [3, 8]
+                    }
+                ],
+                searching: false,
+                lengthChange: true,
+                processing: true,
+                serverSide: true,
+                stateSave: true,
+                ajax: {
+                    "url": '{% url "userList" %}' + window.location.search,
+                    "type": "GET",
+                    "data": createDataForRequest
+                }
+            });
+
+            $('#user_list_table').on('order.dt', function () {
+                // reset the saved filter on reordering
+                current_applied_filter = null;
+                convert_table_data_to_tags();
+            });
+
+            $('#user_list_table').on('column-visibility.dt', function () {
+                convert_table_data_to_tags();
+            });
+
+
+            $('#user_list_table').on('draw.dt', function (e, settings, len) {
+                // reset the saved filter on reordering
+                //current_applied_filter = null;
+                convert_table_data_to_tags();
+            });
+
+
+            $('#user_list_table').on('length.dt', function (e, settings, len) {
+                // reset the saved filter on reordering
+                current_applied_filter = null;
+                convert_table_data_to_tags();
+            });
+
+            $(".filter_a").on("click", "a", function () {
+                var data = $(this).data("filter");
+                current_applied_filter = data.filter_data;
+
+                var column_visibility = data.column_visibility.split(",");
+                var column_order = data.column_order.split(",");
+
+                // adding the reordering and visibility to callback, so that we have data
+                oTable.ajax.reload(function () {
+                    oTable.colReorder.order(column_order);
+
+                    column_visibility.forEach(function (item, index) {
+                        oTable.column(index).visible(item.toLowerCase() == "true")
+                    });
+
+                    convert_table_data_to_tags();
+                });
+            });
+
+
+            function createDataForRequest(d) {
+                if (current_applied_filter == null) {
+                    d.degree = $("#degree_select").val().join();
+                    d.exp_range = current_exp_range;
+                    d.skill = $("#skill_select").val().join();
+                    d.location = $("#location_select").val().join();
+                    d.text = $('#search_text').val();
+                    d.batch_id = $('#batch_id_select').val();
+                    current_applied_filter = d;
+                }
+                else {
+                    current_applied_filter.draw = d.draw;
+                    current_applied_filter.length = d.length;
+                    current_applied_filter.start = d.start;
+                    return current_applied_filter;
+                }
+            }
+
+
+            $("#filter_apply").on("click", function () {
+                current_applied_filter = null;
+                oTable.ajax.reload(function () {
+                    convert_table_data_to_tags();
+                });
+            });
+
+            $("#filter_save").on("click", function () {
+                $(".save_filter_error").text("");
+                // this is the format in which we will save the filter data
+                $("#filter_data").val(JSON.stringify(
+                    {
+                        filter_data: oTable.ajax.params(),
+                        column_visibility: oTable.columns().visible().join(','),
+                        column_order: oTable.colReorder.order().join(",")
+                    }
+                ));
+            });
+
+            $("#saveFilterForm").on("submit", function (e) {
+                e.preventDefault();
+                var url = $(this).attr("action");
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: $(this).serialize(),
+                    success: function (d) {
+                        if (d.status == true) {
+                            $("#saveFilter").modal("hide");
+                            $(".save_filter_error").text();
+                            reload_filters();
+                        }
+                        else {
+                            $(".save_filter_error").text(d.message);
+                        }
+                    }
+                });
+
+            });
+
+
+        });
+
+        function reload_filters() {
+            $.ajax({
+                url: "{% url 'filter_list' %}",
+                method: "GET",
+                success: function (data) {
+                    $(".filter_list_container").html(data);
+                }
+            });
+        }
+
+        function convert_table_data_to_tags() {
+            if ($('td.tags').find(".tagit-hidden-field").length > 0) {
+                return;
+            }
+            $('td.tags').each(function () {
+                var html = $(this).html();
+                var input = $('<input type="text" />');
+                input.val(html);
+                $(this).html(input);
+            });
+            $("td input").tagit(
+                {
+                    readOnly: true
+                }
+            );
+        }
+
+    </script>
+
+
+{% endblock %}

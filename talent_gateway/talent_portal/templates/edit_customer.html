@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load bootstrap %}
+{% load staticfiles %}
+
+{% block body %}
+
+    <div class="container">
+        <h1>User - {{ user.email }}</h1>
+        <div class="row">
+            <div class="col-lg-4 pull-right">
+
+                {% if url %}
+                    <button id="download-button" type="button" class="btn btn-warning" target='_blank' data-url="{{ url }}">Download
+                        Resume
+                    </button>
+                {% else %}
+                    <button class="btn btn-success disabled" type="button" title="Resume not available">Download Resume
+                    </button>
+                {% endif %}
+                <button id="upload-resume-button" type="button" class="btn btn-info">Upload Resume
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-7">
+
+                <form class="form-horizontal" role="form" id="saveForm" method="post"
+                      action="{% url 'save-user' %}" novalidate>
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="download_url" value="{{ url }}">
+                    {% csrf_token %}
+                    {{ form|bootstrap_horizontal:'col-lg-4' }}
+
+                    <div class="btn-block">
+                        <div class="col-lg-4"></div>
+                        <div class="col-lg-8">
+                            <input type="submit" type="button" class="btn btn-success" value="Save">
+                            <input type="button" id="cancel_button" class="btn btn-danger" data-url="{% url 'userListPage' %}" value="Cancel">
+                        </div>
+
+                    </div>
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+
+            $("#download-button").on("click", function () {
+                window.open($(this).data("url"), '_blank');
+            });
+
+            $("#cancel_button").on("click", function () {
+                window.location = $(this).data("url");
+            });
+
+            $("#id_dob").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: "yy-mm-dd"
+            });
+
+            var select = $("select");
+
+            select.chosen({no_results_text: 'Press Enter to add new entry:'});
+
+            select.each(function (index, item) {
+
+                item = $(item);
+                var chosen = item.data('chosen');
+
+                if (chosen.dropdown.find('input').length == 0) {
+                    // for multi-select
+                    chosen.dropdown.siblings('.chosen-choices').find('input').on('keyup', function (e) {
+                        // if we hit Enter and the results list is empty (no matches) add the option
+                        if (e.which == 13 && chosen.dropdown.find('li.no-results').length > 0) {
+                            var option = $("<option>").val(this.value).text(this.value);
+
+                            // add the new option
+                            item.prepend(option);
+                            // automatically select it
+                            item.find(option).prop('selected', true);
+                            // trigger the update
+                            item.trigger("chosen:updated");
+                        }
+                    });
+                }
+                else {
+                    chosen.dropdown.find('input').on('keyup', function (e) {
+                        // if we hit Enter and the results list is empty (no matches) add the option
+                        if (e.which == 13 && chosen.dropdown.find('li.no-results').length > 0) {
+                            var option = $("<option>").val(this.value).text(this.value);
+
+                            // add the new option
+                            item.prepend(option);
+                            // automatically select it
+                            item.find(option).prop('selected', true);
+                            // trigger the update
+                            item.trigger("chosen:updated");
+                        }
+                    });
+                }
+
+
+            });
+
+
+        });
+    </script>
+{% endblock %}

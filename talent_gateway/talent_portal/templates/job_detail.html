@@ -1,0 +1,97 @@
+{% extends 'customer_base.html' %}
+{% load i18n %}
+{% load bootstrap %}
+
+{% block body %}
+
+    <div class="container">
+        <h2>{{ job.title }}</h2>
+        <br>
+
+
+        <table class="table">
+
+            <tbody>
+            <tr>
+                <th scope="row">Job Id</th>
+                <td>{{ job.job_id }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Description</th>
+                <td>{{ job.description }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Posted By</th>
+                <td>{{ job.posted_by }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Exp</th>
+                <td>{{ job.target_exp }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Salary</th>
+                <td>
+                    {% if job.min_salary and job.max_salary %}
+                        {{ job.min_salary }} - {{ job.max_salary }}
+                        <br>
+                    {% endif %}
+
+                    {{ job.salary_text }}
+
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Functional Area</th>
+                <td>{{ job.functional_area }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Industry</th>
+                <td>{{ job.industry }}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <br>
+        <h3>Applicant details:</h3>
+        <p>Fill in the details below to apply for this job:</p>
+        <br>
+        <div>
+            <form class="form-horizontal" role="form" id="saveForm" method="post"
+                  action="{% url 'job_apply' %}" enctype="multipart/form-data">
+                <input type="hidden" name="job_id" value="{{ job.id }}">
+                {% csrf_token %}
+                {{ form|bootstrap_horizontal:'col-lg-1 col-lg-3' }}
+
+                <div class="form-group">
+                    <label class="control-label col-lg-1 " for="id_upload_resume">Upload
+                        resume</label>
+                    <div class="col-lg-3">
+                        <input type="file" name="resume" accept="*.*" required>
+                    </div>
+                </div>
+
+
+                <div class="btn-block">
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-8">
+                        <input type="submit" class="btn btn-default" value="Apply">
+                    </div>
+
+                </div>
+            </form>
+            <br>
+            <br>
+            <br>
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+
+        });
+    </script>
+{% endblock %}

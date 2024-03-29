@@ -1,0 +1,102 @@
+{% extends 'customer_base.html' %}
+{% load i18n %}
+
+{% block body %}
+
+    <div class="container">
+        <h1>Available Jobs</h1>
+
+        {% if job_list %}
+
+
+            <table class="table table-hover table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Job Id</th>
+                    <th>Title</th>
+                    <th>Posted by</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+                {% for job in job_list %}
+                    <tr>
+                        <th scope="row">{{ job.job_id }}</th>
+                        <td>{{ job.title }}</td>
+                        <td>{{ job.posted_by }}</td>
+
+                        <td><a href="{% url 'job_detail' job.id %}">Details/Apply</a></td>
+                    </tr>
+                {% endfor %}
+
+
+                </tbody>
+            </table>
+
+
+
+
+
+            {% if is_paginated %}
+                <nav>
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li>
+                                <a href="?page={{ page_obj.previous_page_number }}">
+                                    <span>Previous</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="disabled">
+                                <a href="#">
+                                    <span>Previous</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for page in paginator.page_range %}
+                            <li {% if page == page_obj.number %}class="active"{% endif %}>
+                                <a href="?page={{ page }}">{{ page }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}">
+                                    <span>Next</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li {% if not page_obj.has_next %}class="disabled"{% endif %}>
+                                <a href="#">
+                                    <span>Next</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+
+
+
+        {% else %}
+            <p>There are no jobs available at the moment.</p>
+        {% endif %}
+
+    </div>
+
+
+
+
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+
+        });
+    </script>
+{% endblock %}

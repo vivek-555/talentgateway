@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block body %}
+
+    <div class="container">
+        <h1>Bulk upload records</h1>
+        <div>
+
+            <h3>
+                Upload excel and rar file
+            </h3>
+            <div>
+                <form id="bulkuploadform" action="{% url 'updload_records' %}" method="post"
+                      enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-lg-1">
+                            Excel file
+                        </div>
+                        <div class="col-lg-3">
+                            <input type="file" name="excel_file" accept=".xlsx">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-1">
+                            Rar file
+                        </div>
+                        <div class="col-lg-3">
+                            <input type="file" name="rar_file" accept=".rar">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <input type="submit">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var set_interval_id = null;
+        $(document).ready(function () {
+            $("#bulkuploadform").on("submit", function (e) {
+                e.preventDefault();
+                var url = $(this).attr("action");
+
+                showLoader("Uploading...");
+
+                var formData = new FormData($(this)[0]);
+
+                $.ajax({
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    type: 'POST',
+                    url: url,
+                    data: formData,
+                    success: function (response) {
+                        var task_id = response["data"]["task_id"];
+                        var batch_id = response["data"]["batch_id"];
+                        changeLoaderText("Processing. The upload batch id is - " + batch_id);
+                        set_interval_id = setInterval(function () {
+                            check_status(task_id, batch_id);
+                        }, 3000);
+                    }
+                });
+                $("#saveFilter").modal("hide");
+            });
+
+        });
+
+        function check_status(task_id, batch_id) {
+            $.ajax({
+                type: "GET",
+                url: '/task/status/' + task_id,
+                success: function (response) {
+
+                    if ((response["state"]).toLocaleLowerCase() == "FAILURE".toLocaleLowerCase()) {
+
+                        clearInterval(set_interval_id);
+                        hideLoader();
+                        alert("There was some error in processing records. Please contact support.")
+                    }
+                    else if ((response["state"]).toLowerCase() == "SUCCESS".toLocaleLowerCase()) {
+
+                        clearInterval(set_interval_id);
+                        hideLoader();
+                        window.location = "/dataentry/userlist/?batch=" + batch_id;
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}
